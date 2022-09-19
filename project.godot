@@ -12,9 +12,8 @@ _global_script_classes=[ {
 "base": "Sprite",
 "class": "CookieClass",
 "language": "GDScript",
-"path": "res://CookieScript.gd"
-} ,
-{
+"path": "res://scripts/cookie.gd"
+}, {
 "base": "Resource",
 "class": "DialogueResource",
 "language": "GDScript",
@@ -28,7 +27,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Dragon Game"
-run/main_scene="res://CookieClass.tscn"
+run/main_scene="res://scenes/cookie_grid/cookie_grid.tscn"
 config/icon="res://icon.png"
 
 [autoload]
