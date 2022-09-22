@@ -45,9 +45,12 @@ func _process(delta: float) -> void:
 				current_state = states.DRAG_STATE
 				for cookie in cookie_big[start_cookie.y]:
 					cookie_list.append(cookie)
+				mouse_position_end = Vector2(-1,-1)
+				return
 		states.DRAG_STATE:
 			for cookie in cookie_list:
 				cookie.offsetY = mouse_delta.y
+				cookie.update_position()
 		states.SCORE_STATE:
 			pass
 
@@ -55,8 +58,11 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if current_state == states.CLICK_STATE:
 			mouse_position_start = event.global_position
+			return
 		elif current_state == states.DRAG_STATE:
 			mouse_position_end = event.global_position
+			return
 	elif event is InputEventMouseMotion:
 		if current_state == states.DRAG_STATE:
-			mouse_delta + event.relative
+			mouse_delta += event.relative
+			return
