@@ -1,6 +1,20 @@
-extends Node
+extends Node2D
+
+enum states {CLICK_STATE, DRAG_STATE, SCORE_STATE}
+var current_state = states.CLICK_STATE
+
+var mouse_position_start = Vector2(-1, -1)
+var mouse_position_end = Vector2(-1, -1)
 
 var cookie_big = []
+var north
+var south
+var east
+var west
+
+var start_cookie = Vector2()
+var mouse_delta = Vector2()
+var cookie_list = []
 
 func _ready() -> void:
 	for n in range(8):
@@ -14,3 +28,35 @@ func _ready() -> void:
 			add_child(cookie)
 		cookie_big.append(cookie_small)
 	print(cookie_big[7][7])
+	north = global_position.y
+	south = global_position.y + 64 * 8
+	east = global_position.x + 64 * 8
+	west = global_position.x
+
+func _process(delta: float) -> void:
+	match current_state:
+		states.CLICK_STATE:
+			if (mouse_position_start.x > west and mouse_position_start.x < east and 
+			mouse_position_start.y > north and mouse_position_start.y < south):
+				var found_cookie = Vector2((floor((mouse_position_start.x - global_position.x) /64)),
+				(floor((mouse_position_start.y - global_position.y) /64)))
+				print(found_cookie)
+				start_cookie = found_cookie
+				current_state = states.DRAG_STATE
+				for cookie in cookie_big[start_cookie.y]:
+					cookie_list.append(cookie)
+		states.DRAG_STATE:
+			for cookie in cookie_list:
+				cookie.offsetY = mouse_delta.y
+		states.SCORE_STATE:
+			pass
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if current_state == states.CLICK_STATE:
+			mouse_position_start = event.global_position
+		elif current_state == states.DRAG_STATE:
+			mouse_position_end = event.global_position
+	elif event is InputEventMouseMotion:
+		if current_state == states.DRAG_STATE:
+			mouse_delta + event.relative
