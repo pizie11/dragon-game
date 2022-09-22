@@ -41,11 +41,12 @@ func _process(delta: float) -> void:
 				var found_cookie = Vector2((floor((mouse_position_start.x - global_position.x) /64)),
 				(floor((mouse_position_start.y - global_position.y) /64)))
 				print(found_cookie)
-				start_cookie = found_cookie
-				current_state = states.DRAG_STATE
+				start_cookie.x = found_cookie.y
+				start_cookie.y = found_cookie.x
 				for cookie in cookie_big[start_cookie.y]:
 					cookie_list.append(cookie)
 				mouse_position_end = Vector2(-1,-1)
+				current_state = states.DRAG_STATE
 				return
 		states.DRAG_STATE:
 			for cookie in cookie_list:
