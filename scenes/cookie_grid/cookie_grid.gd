@@ -14,7 +14,8 @@ var west
 
 var start_cookie = Vector2()
 var mouse_delta = Vector2()
-var cookie_list = []
+var cookie_listY = []
+var cookie_listX = []
 
 func _ready() -> void:
 	for n in range(8):
@@ -44,13 +45,18 @@ func _process(delta: float) -> void:
 				start_cookie.x = found_cookie.y
 				start_cookie.y = found_cookie.x
 				for cookie in cookie_big[start_cookie.y]:
-					cookie_list.append(cookie)
+					cookie_listY.append(cookie)
+				for cookie_column in cookie_big:
+					cookie_listX.append(cookie_column[start_cookie.x])
 				mouse_position_end = Vector2(-1,-1)
 				current_state = states.DRAG_STATE
 				return
 		states.DRAG_STATE:
-			for cookie in cookie_list:
+			for cookie in cookie_listY:
 				cookie.offsetY = mouse_delta.y
+				cookie.update_position()
+			for cookie in cookie_listX:
+				cookie.offsetX = mouse_delta.x
 				cookie.update_position()
 		states.SCORE_STATE:
 			pass
