@@ -52,27 +52,27 @@ func _process(delta: float) -> void:
 		states.CLICK_STATE: # CLICK-> DRAG
 			if (have_click and is_in_box(mouse_position_start, north,south,east, west)):
 				print("CLICK->DRAG")
-				var start_cookie := get_grid_of_position(mouse_position_start)
-				print(start_cookie)
-				
+				var found_cookie := get_grid_of_position(mouse_position_start)
+				print(found_cookie)
+				# DO NOT ALTER, TO FIX X/Y WIERDNESS
+				start_cookie.x = found_cookie.y
+				start_cookie.y = found_cookie.x
 				for cookie in cookie_columns[start_cookie.y]:
 					cookie_listY.append(cookie)
 				for cookie_column in cookie_columns:
 					cookie_listX.append(cookie_column[start_cookie.x])
-					
 				mouse_position_end = Vector2(-1,-1)
 				mouse_delta = Vector2()
 				current_state = states.DRAG_STATE
 				return
 		states.DRAG_STATE:
+			#handling cookie movement in drag state
 			var move_X = false
 			var move_Y = false
-			
 			if abs(mouse_delta.y) > abs(mouse_delta.x):
 				move_Y = true
 			else:
 				move_X = true
-				
 			for cookie in cookie_listY:
 				var new_shift :Vector2= cookie.get_shift()
 				if move_Y:
@@ -83,7 +83,6 @@ func _process(delta: float) -> void:
 					new_shift.y = 0
 				cookie.set_shift(new_shift)
 				cookie.update_position()
-				
 			for cookie in cookie_listX:
 				var new_shift:Vector2= cookie.get_shift()
 				if move_X:
@@ -94,7 +93,6 @@ func _process(delta: float) -> void:
 					# Y position stays the same!
 				cookie.set_shift(new_shift)
 				cookie.update_position()
-				
 			if have_click and mouse_delta.length() > 0 : #DRAG-> SCORE
 				print("DRAG->SCORE")
 				mouse_position_start = Vector2()
@@ -112,7 +110,6 @@ func _process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	have_click = false
-	
 	if event is InputEventMouseButton and not in_grace:
 		if current_state == states.CLICK_STATE:
 			mouse_position_start = event.global_position
