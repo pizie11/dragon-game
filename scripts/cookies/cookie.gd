@@ -1,4 +1,4 @@
-class_name CookieClass
+class_name Cookie
 extends Sprite
 
 onready var image := preload("res://icon.png")
@@ -19,6 +19,9 @@ func set_grid(x_val : int, y_val : int) -> void:
 
 func get_grid() -> Vector2:
 	return grid_pos
+	
+func get_grid_swap()->Vector2:
+	return Vector2(grid_pos.y,grid_pos.x)
 
 func set_shift(new: Vector2) -> void:
 	shift_pos = new

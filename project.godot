@@ -10,9 +10,19 @@ config_version=4
 
 _global_script_classes=[ {
 "base": "Sprite",
-"class": "CookieClass",
+"class": "Cookie",
 "language": "GDScript",
-"path": "res://scripts/cookie.gd"
+"path": "res://scripts/cookies/cookie.gd"
+}, {
+"base": "Cookie",
+"class": "CookieGreen",
+"language": "GDScript",
+"path": "res://scripts/cookies/green.gd"
+}, {
+"base": "Cookie",
+"class": "CookieRed",
+"language": "GDScript",
+"path": "res://scripts/cookies/red.gd"
 }, {
 "base": "Resource",
 "class": "DialogueResource",
@@ -20,7 +30,9 @@ _global_script_classes=[ {
 "path": "res://addons/dialogue_manager/dialogue_resource.gd"
 } ]
 _global_script_class_icons={
-"CookieClass": "",
+"Cookie": "",
+"CookieGreen": "",
+"CookieRed": "",
 "DialogueResource": ""
 }
 
