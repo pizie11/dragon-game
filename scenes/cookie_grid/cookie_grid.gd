@@ -83,6 +83,12 @@ func _click_to_drag() -> void:
 		cookie_listY = cookie_matrix[start_cookie.y]
 		for cookie_column in cookie_matrix:
 			cookie_listX.append(cookie_column[start_cookie.x])
+		# Create clones for scrolling
+		for cookie in cookie_listY:
+			cookie.create_clones_y()
+		for cookie in cookie_listX:
+			cookie.create_clones_x()
+		# Set vars for new state
 		mouse_position_end = Vector2(-1,-1)
 		mouse_delta = Vector2()
 		current_state = states.DRAG_STATE
@@ -133,6 +139,11 @@ func _drag_to_score() -> void:
 		# Do redundancy check on the whole grid matrix HERE
 		# mostly for the cookie grid var
 		update_matrix()
+		# Remove visual clones
+		for cookie in cookie_listX:
+			cookie.destroy_clones()
+		for cookie in cookie_listY:
+			cookie.destroy_clones()
 		# Reset certain vars
 		mouse_position_start = Vector2()
 		cookie_listX = []
@@ -141,6 +152,7 @@ func _drag_to_score() -> void:
 		in_grace = true
 		current_state = states.SCORE_STATE
 		timer.start()
+
 ### OTHER/HELPER FUNCTIONS
 # Handle Mouse input
 func _input(event: InputEvent) -> void:
