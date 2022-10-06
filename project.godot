@@ -14,6 +14,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://scripts/cookies/cookie.gd"
 }, {
+"base": "Object",
+"class": "CookieArray",
+"language": "GDScript",
+"path": "res://scripts/cookies/cookie_array.gd"
+}, {
 "base": "Cookie",
 "class": "CookieGreen",
 "language": "GDScript",
@@ -31,6 +36,7 @@ _global_script_classes=[ {
 } ]
 _global_script_class_icons={
 "Cookie": "",
+"CookieArray": "",
 "CookieGreen": "",
 "CookieRed": "",
 "DialogueResource": ""
