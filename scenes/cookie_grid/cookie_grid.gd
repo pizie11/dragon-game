@@ -1,4 +1,5 @@
 extends Node2D
+# displays a grid of cookies in a scene
 
 # State vars
 enum States {CLICK_STATE, DRAG_STATE, SCORE_STATE}
@@ -19,7 +20,7 @@ var mouse_position_start := Vector2(-1, -1)
 var mouse_position_end := Vector2(-1, -1)
 
 # Cookie grid matrix
-var cookie_matrix := []
+var cookie_matrix : CookieMatrix
 
 # Grid boundaries
 var north: float
@@ -28,8 +29,8 @@ var east: float
 var west: float
 
 # vars for click state
-var start_cookie := Vector2()
-var end_cookie := Vector2()
+var start_cookie := Vector2I.new()
+var end_cookie := Vector2I.new()
 
 # vars for drag state
 var move_x: bool
@@ -43,16 +44,10 @@ var have_click := false
 var in_grace := false
 
 func _ready() -> void:
-	for n in range(GRID_WIDTH):
-		var cookie_column := CookieArray.new()
-		for n2 in range(GRID_HEIGHT):
-			var cookie: Cookie = cookie_types[randi()%3].new()
-			cookie.set_grid(n,n2)
-			cookie.update_position()
-			cookie_column.append(cookie)
-			add_child(cookie)
-		cookie_matrix.append(cookie_column)
-	print(cookie_matrix[7].get_cookie(7))
+	cookie_matrix = CookieMatrix.new(GRID_WIDTH, GRID_HEIGHT, cookie_types)
+	for cookie in cookie_matrix.get_loose_cookies():
+		add_child(cookie)
+	print(cookie_matrix.get_cookie(Vector2(7,7)))
 	north = global_position.y
 	south = global_position.y + COOKIE_SIZE_Y * GRID_HEIGHT
 	east = global_position.x + COOKIE_SIZE_X * GRID_WIDTH
@@ -82,11 +77,11 @@ func _click_to_drag() -> void:
 		# DO NOT ALTER, TO FIX X/Y WIERDNESS
 		start_cookie.x = found_cookie.y
 		start_cookie.y = found_cookie.x
-		cookie_listY = cookie_matrix[start_cookie.y]
-		cookie_listX = get_cookie_row(start_cookie.x)
+		cookie_listX = cookie_matrix.get_cookie_row(start_cookie.x)
+		cookie_listY = cookie_matrix.get_cookie_column(start_cookie.y)
 		# Create clones for scrolling
-		cookie_listY.make_y_clones()
 		cookie_listX.make_x_clones()
+		cookie_listY.make_y_clones()
 		# Set vars for new state
 		mouse_position_end = Vector2(-1,-1)
 		mouse_delta = Vector2()
@@ -105,11 +100,11 @@ func _do_drag() -> void:
 	if move_y:
 		cookie_listY.set_global_shift(Vector2(0,mouse_delta.y))
 	else:
-		cookie_listY.set_global_shift(Vector2(),true,false)
+		cookie_listY.reset_global_shift(false,true)
 	if move_x:
 		cookie_listX.set_global_shift(Vector2(mouse_delta.x,0))
 	else:
-		cookie_listX.set_global_shift(Vector2(),false,true)
+		cookie_listX.reset_global_shift(true,false)
 
 
 # Drag state to scoring state
@@ -117,19 +112,20 @@ func _drag_to_score() -> void:
 	if have_click and mouse_delta.length() > 0 : # DRAG-> SCORE
 		print("DRAG->SCORE")
 		var found_cookie := get_grid_of_position(mouse_position_end)
-		end_cookie = Vector2(found_cookie.y,found_cookie.x)
-		var distance: Vector2 = end_cookie - start_cookie
+		end_cookie = Vector2I.new(found_cookie.y,found_cookie.x)
+		# TODO turn this into Vector2I helper adding, cant be in class due to
+		# cycle restriction
+		var distance := Vector2I.new(end_cookie.x-start_cookie.x, 
+									end_cookie.y-start_cookie.y)
 		# move all cookies 
-		# Easy, just rotate the list at cookie_start.y by distance
 		if move_y and distance.x != 0: 
-			cookie_matrix[start_cookie.y].rotate(-distance.x)
-		# Harder, go through each column list and rotate that at a position cookie_start.x by distance
+			cookie_matrix.rotate_matrix_column(start_cookie.y, -distance.x)
 		if move_x: 
-						rotate_matrix_row(start_cookie.x, -distance.y)
-		print("moving ",-distance, " spots")	
+			cookie_matrix.rotate_matrix_row(start_cookie.x, -distance.y)
+		print("moving (",-distance.x,",",-distance.y, ") spots")	
 		# Do redundancy check on the whole grid matrix HERE
 		# mostly for the cookie grid var
-		update_matrix()
+		cookie_matrix.update()
 		# Remove visual clones
 		cookie_listX.delete_clones()
 		cookie_listY.delete_clones()
@@ -148,24 +144,18 @@ func _drag_to_score() -> void:
 func _input(event: InputEvent) -> void:
 	have_click = false
 	if event is InputEventMouseButton and not in_grace:
-		if current_state == States.CLICK_STATE:
-			mouse_position_start = event.global_position
+		var button_event := (event as InputEventMouseButton)
+		if current_state is States.CLICK_STATE:
+			mouse_position_start = button_event.global_position
 			have_click = true
-		elif current_state == States.DRAG_STATE:
-			mouse_position_end = event.global_position
+		elif current_state is States.DRAG_STATE:
+			mouse_position_end = button_event.global_position
 			have_click = true
 	elif event is InputEventMouseMotion:
-		if current_state == States.DRAG_STATE:
-			mouse_delta += event.relative
+		var motion_event := (event as InputEventMouseMotion)
+		if current_state is States.DRAG_STATE:
+			mouse_delta += motion_event.relative
 			return
-
-
-# return a cookie array of a matrix row
-func get_cookie_row(n: int) -> CookieArray:
-	var result_array := CookieArray.new()
-	for cookie_column in cookie_matrix:
-		result_array.append(cookie_column.get_cookie(n))
-	return result_array
 
 
 # returns whether or not a click is within a north/south/east/west box! 
@@ -175,28 +165,10 @@ func is_in_box(pos: Vector2, n: float, s: float, e: float, w: float) -> bool:
 
 
 # returns the grid position of a position
-func get_grid_of_position(pos: Vector2) -> Vector2:
-	var x_val := floor((pos.x - global_position.x) / COOKIE_SIZE_X)
-	var y_val := floor((pos.y - global_position.y) / COOKIE_SIZE_Y)
-	return Vector2(x_val, y_val)
-
-
-# Update the variables of every cookie in the matrix
-func update_matrix() -> void:
-	for n in range(GRID_WIDTH):
-		cookie_matrix[n].update_array(n, GRID_HEIGHT)
-
-
-# Rotate a certain row in the cookie matrix
-func rotate_matrix_row(row: int, distance: int) -> void:
-	# Rotate a matrix row by a distance
-	var stored_array := CookieArray.new()
-	for i in range(GRID_HEIGHT):
-		stored_array.append(cookie_matrix[i].get_cookie(row))
-	for i in range(GRID_HEIGHT):
-		var new_i := (i+distance)%8
-		cookie_matrix[i].set_cookie(row, stored_array.get_cookie(new_i))
-	#print(stored_row)
+func get_grid_of_position(pos: Vector2) -> Vector2I:
+	var x_val:= int(floor((pos.x - global_position.x) / COOKIE_SIZE_X))
+	var y_val:= int(floor((pos.y - global_position.y) / COOKIE_SIZE_Y))
+	return Vector2I.new(x_val, y_val)
 
 
 # Timer signal function

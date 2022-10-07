@@ -1,5 +1,6 @@
 class_name CookieArray
 extends Object
+# Class for holding a Cookie Array
 # Since this class is dealing with an array directly, it is fine for lines to be grey or "unsafe"
 
 var internal : Array
@@ -17,13 +18,22 @@ func set_cookie(i: int, c:Cookie) -> void:
 	internal[i] = c
 
 
-func set_global_shift(v: Vector2, keep_x=false, keep_y=false)->void:
+func set_global_shift(v: Vector2)->void:
 	for cookie in internal:
 		var new_shift: Vector2 = cookie.get_shift()
-		if !keep_x:
-			new_shift.x = v.x
-		if !keep_y:
-			new_shift.y = v.y
+		new_shift.x = v.x
+		new_shift.y = v.y
+		cookie.set_shift(new_shift)
+		cookie.update_position()
+
+
+func reset_global_shift(reset_x = true, reset_y = true) -> void:
+	for cookie in internal:
+		var new_shift: Vector2 = cookie.get_shift()
+		if reset_x:
+			new_shift.x = 0
+		if reset_y:
+			new_shift.y = 0
 		cookie.set_shift(new_shift)
 		cookie.update_position()
 
