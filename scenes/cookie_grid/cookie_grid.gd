@@ -145,15 +145,15 @@ func _input(event: InputEvent) -> void:
 	have_click = false
 	if event is InputEventMouseButton and not in_grace:
 		var button_event := (event as InputEventMouseButton)
-		if current_state is States.CLICK_STATE:
+		if current_state == States.CLICK_STATE:
 			mouse_position_start = button_event.global_position
 			have_click = true
-		elif current_state is States.DRAG_STATE:
+		elif current_state == States.DRAG_STATE:
 			mouse_position_end = button_event.global_position
 			have_click = true
 	elif event is InputEventMouseMotion:
 		var motion_event := (event as InputEventMouseMotion)
-		if current_state is States.DRAG_STATE:
+		if current_state == States.DRAG_STATE:
 			mouse_delta += motion_event.relative
 			return
 
