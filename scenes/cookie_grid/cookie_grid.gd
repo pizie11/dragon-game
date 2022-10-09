@@ -23,10 +23,7 @@ var mouse_position_end := Vector2(-1, -1)
 var cookie_matrix : CookieMatrix
 
 # Grid boundaries
-var north: float
-var south: float
-var east: float
-var west: float
+var boundary : Rect2
 
 # vars for click state
 var start_cookie := Vector2I.new()
@@ -48,10 +45,9 @@ func _ready() -> void:
 	for cookie in cookie_matrix.get_loose_cookies():
 		add_child(cookie)
 	print(cookie_matrix.get_cookie(Vector2(7,7)))
-	north = global_position.y
-	south = global_position.y + COOKIE_SIZE_Y * GRID_HEIGHT
-	east = global_position.x + COOKIE_SIZE_X * GRID_WIDTH
-	west = global_position.x
+	
+	boundary = Rect2(global_position, Vector2(COOKIE_SIZE_X * GRID_WIDTH, 
+												COOKIE_SIZE_Y * GRID_HEIGHT))
 
 
 func _process(_delta: float) -> void:
@@ -68,7 +64,7 @@ func _process(_delta: float) -> void:
 ### STATE FUNCTIONS
 # Click state to drag state transition
 func _click_to_drag() -> void:
-	if (have_click and is_in_box(mouse_position_start, north,south,east, west)):
+	if (have_click and is_in_box(mouse_position_start, boundary)):
 		print("CLICK->DRAG")
 		start_cookie = get_grid_of_position(mouse_position_start)
 		print("(",start_cookie.x,",",start_cookie.y,")")
@@ -100,7 +96,6 @@ func _do_drag() -> void:
 		chosen_column.set_global_shift(Vector2(0,mouse_delta.y))
 	else:
 		chosen_column.reset_global_shift(false,true)
-
 
 
 # Drag state to scoring state
@@ -161,8 +156,8 @@ func _input(event: InputEvent) -> void:
 
 # returns whether or not a click is within a north/south/east/west box! 
 # (COULD GO TO LIBRARY)
-func is_in_box(pos: Vector2, n: float, s: float, e: float, w: float) -> bool:
-	return pos.x > w and pos.x < e and pos.y > n and pos.y < s
+func is_in_box(pos: Vector2, box: Rect2) -> bool:
+	return box.has_point(pos)
 
 
 # returns the grid position of a position
