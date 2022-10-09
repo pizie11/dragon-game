@@ -5,36 +5,40 @@ onready var image := preload("res://icon.png")
 
 var grid_pos := Vector2()
 var shift_pos := Vector2()
+var clone : Sprite
+
 
 func _ready() -> void: 
 	texture = image
 	centered = false
+	#setup our clone
+	clone = Sprite.new()
+	clone.texture = texture
+	clone.centered = false
 
 
 func update_position() -> void:
-	position.x = (grid_pos.x * 64) + shift_pos.x
-	position.y = (grid_pos.y * 64) + shift_pos.y
+	position.x = (grid_pos.x * C.COOKIE_WIDTH) + shift_pos.x
+	position.y = (grid_pos.y * C.COOKIE_HEIGHT) + shift_pos.y
 
 
 # Create shadow clones 8*64 pixels away in x axis
 func create_clones_x() -> void:
-	create_single_clone(Vector2(-8*64,0))
-	create_single_clone(Vector2(8*64,0))
+	create_single_clone(C.CLONE_EAST)
+	create_single_clone(C.CLONE_WEST)
 
 
 # Create shadow clones 8*64 pixels away in y axis
 func create_clones_y() -> void:
-	create_single_clone(Vector2(0,8*64))
-	create_single_clone(Vector2(0,-8*64))
+	create_single_clone(C.CLONE_NORTH)
+	create_single_clone(C.CLONE_SOUTH)
 
 
 # Create empty clone sprite for visual purposes
 func create_single_clone(v: Vector2) -> void:
-	var clone := Sprite.new()
-	clone.position = v
-	clone.texture = texture
-	clone.centered = false
-	add_child(clone)
+	var new_clone = clone.duplicate()
+	new_clone.position = v
+	add_child(new_clone)
 
 
 # Destroy all clone spritees

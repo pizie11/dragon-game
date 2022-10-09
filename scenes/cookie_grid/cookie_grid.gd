@@ -9,15 +9,9 @@ onready var timer := ($Timer as Timer)
 
 var cookie_types := [Cookie, CookieRed, CookieGreen]
 
-const GRID_WIDTH = 8
-const GRID_HEIGHT = 8
-
-const COOKIE_SIZE_X = 64
-const COOKIE_SIZE_Y = 64
-
 # mouse start and end positions of drag
-var mouse_position_start := Vector2(-1, -1)
-var mouse_position_end := Vector2(-1, -1)
+var mouse_position_start := Vector2()
+var mouse_position_end := Vector2()
 
 # Cookie grid matrix
 var cookie_matrix : CookieMatrix
@@ -41,13 +35,12 @@ var have_click := false
 var in_grace := false
 
 func _ready() -> void:
-	cookie_matrix = CookieMatrix.new(GRID_WIDTH, GRID_HEIGHT, cookie_types)
+	cookie_matrix = CookieMatrix.new(C.GRID_WIDTH, C.GRID_HEIGHT, cookie_types)
 	for cookie in cookie_matrix.get_loose_cookies():
 		add_child(cookie)
 	print(cookie_matrix.get_cookie(Vector2(7,7)))
-	
-	boundary = Rect2(global_position, Vector2(COOKIE_SIZE_X * GRID_WIDTH, 
-												COOKIE_SIZE_Y * GRID_HEIGHT))
+	boundary = Rect2(global_position, Vector2(C.COOKIE_WIDTH * C.GRID_WIDTH, 
+												C.COOKIE_HEIGHT * C.GRID_HEIGHT))
 
 
 func _process(_delta: float) -> void:
@@ -74,7 +67,7 @@ func _click_to_drag() -> void:
 		chosen_row.make_x_clones()
 		chosen_column.make_y_clones()
 		# Set vars for new state
-		mouse_position_end = Vector2(-1,-1)
+		mouse_position_end = Vector2()
 		mouse_delta = Vector2()
 		current_state = States.DRAG_STATE
 
@@ -110,8 +103,10 @@ func _drag_to_score() -> void:
 		# move all cookies 
 		if move_row and distance.x != 0: 
 			cookie_matrix.rotate_matrix_row(start_cookie.y, -distance.x)
+			#chosen_row.update_array_row(start_cookie.y)
 		if move_column and distance.y != 0:
 			cookie_matrix.rotate_matrix_column(start_cookie.x, -distance.y)
+			#chosen_column.update_array_column(start_cookie.x)
 		print("moving (",distance.x,",",distance.y, ") spots")	
 		# Do redundancy check on the whole grid matrix HERE
 		# mostly for the cookie grid var
@@ -162,8 +157,8 @@ func is_in_box(pos: Vector2, box: Rect2) -> bool:
 
 # returns the grid position of a position
 func get_grid_of_position(pos: Vector2) -> Vector2I:
-	var x_val:= int(floor((pos.x - global_position.x) / COOKIE_SIZE_X))
-	var y_val:= int(floor((pos.y - global_position.y) / COOKIE_SIZE_Y))
+	var x_val:= int(floor((pos.x - global_position.x) / C.COOKIE_WIDTH))
+	var y_val:= int(floor((pos.y - global_position.y) / C.COOKIE_HEIGHT))
 	return Vector2I.new(x_val, y_val)
 
 

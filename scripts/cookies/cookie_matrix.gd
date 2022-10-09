@@ -67,4 +67,4 @@ func rotate_matrix_row(row: int, distance: int) -> void:
 
 func update() -> void:
 	for n in range(width):
-		internal[n].update_array(n, height)
+		internal[n].update_array_row(n)

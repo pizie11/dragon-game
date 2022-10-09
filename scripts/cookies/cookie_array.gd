@@ -10,8 +10,7 @@ func append(c : Cookie)-> void:
 
 
 func get_cookie(i : int) -> Cookie:
-	var c = internal[i]
-	return c
+	return internal[i]
 
 
 func set_cookie(i: int, c:Cookie) -> void:
@@ -47,10 +46,17 @@ func rotate(n: int) -> void:
 
 # updates the grid, shift, and position of every cookie in the array
 # row is the row all the cookies in this array should be set to when displayed
-func update_array(row: int, grid_height: int) -> void:
-	for n in range(grid_height):
-		internal[n].set_grid(n,row)
-		internal[n].set_shift(Vector2(0,0))
+func update_array_column(column: int) -> void:
+	for n in range(C.GRID_WIDTH):
+		internal[n].set_grid(column, n)
+		internal[n].set_shift(Vector2())
+		internal[n].update_position()
+
+
+func update_array_row(row: int) -> void:
+	for n in range(C.GRID_HEIGHT):
+		internal[n].set_grid(n, row)
+		internal[n].set_shift(Vector2())
 		internal[n].update_position()
 
 
