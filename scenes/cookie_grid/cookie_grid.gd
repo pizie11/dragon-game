@@ -33,11 +33,11 @@ var start_cookie := Vector2I.new()
 var end_cookie := Vector2I.new()
 
 # vars for drag state
-var move_x: bool
-var move_y: bool
+var move_row: bool
+var move_column: bool
 var mouse_delta := Vector2()
-var cookie_listY := CookieArray.new()
-var cookie_listX := CookieArray.new()
+var chosen_row := CookieArray.new()
+var chosen_column := CookieArray.new()
 
 # Boolean flags
 var have_click := false
@@ -62,9 +62,7 @@ func _process(_delta: float) -> void:
 			_do_drag()
 			_drag_to_score()
 		States.SCORE_STATE:
-			print("SCORE->CLICK")
-			current_state = States.CLICK_STATE
-			have_click = false
+			_score_to_click()
 
 
 ### STATE FUNCTIONS
@@ -72,16 +70,13 @@ func _process(_delta: float) -> void:
 func _click_to_drag() -> void:
 	if (have_click and is_in_box(mouse_position_start, north,south,east, west)):
 		print("CLICK->DRAG")
-		var found_cookie := get_grid_of_position(mouse_position_start)
-		print(found_cookie)
-		# DO NOT ALTER, TO FIX X/Y WIERDNESS
-		start_cookie.x = found_cookie.y
-		start_cookie.y = found_cookie.x
-		cookie_listX = cookie_matrix.get_cookie_row(start_cookie.x)
-		cookie_listY = cookie_matrix.get_cookie_column(start_cookie.y)
+		start_cookie = get_grid_of_position(mouse_position_start)
+		print("(",start_cookie.x,",",start_cookie.y,")")
+		chosen_row = cookie_matrix.get_cookie_row(start_cookie.y)
+		chosen_column = cookie_matrix.get_cookie_column(start_cookie.x)
 		# Create clones for scrolling
-		cookie_listX.make_x_clones()
-		cookie_listY.make_y_clones()
+		chosen_row.make_x_clones()
+		chosen_column.make_y_clones()
 		# Set vars for new state
 		mouse_position_end = Vector2(-1,-1)
 		mouse_delta = Vector2()
@@ -91,52 +86,58 @@ func _click_to_drag() -> void:
 # Doing dragging update in drag state
 func _do_drag() -> void:
 	# handling cookie movement in drag state
-	move_x = false
-	move_y = false
-	if abs(mouse_delta.y) > abs(mouse_delta.x):
-		move_y = true
+	move_row = false
+	move_column = false
+	if abs(mouse_delta.y) < abs(mouse_delta.x):
+		move_row = true
 	else:
-		move_x = true
-	if move_y:
-		cookie_listY.set_global_shift(Vector2(0,mouse_delta.y))
+		move_column = true	
+	if move_row:
+		chosen_row.set_global_shift(Vector2(mouse_delta.x,0))
 	else:
-		cookie_listY.reset_global_shift(false,true)
-	if move_x:
-		cookie_listX.set_global_shift(Vector2(mouse_delta.x,0))
+		chosen_row.reset_global_shift(true,false)
+	if move_column:
+		chosen_column.set_global_shift(Vector2(0,mouse_delta.y))
 	else:
-		cookie_listX.reset_global_shift(true,false)
+		chosen_column.reset_global_shift(false,true)
+
 
 
 # Drag state to scoring state
 func _drag_to_score() -> void:
 	if have_click and mouse_delta.length() > 0 : # DRAG-> SCORE
 		print("DRAG->SCORE")
-		var found_cookie := get_grid_of_position(mouse_position_end)
-		end_cookie = Vector2I.new(found_cookie.y,found_cookie.x)
+		end_cookie = get_grid_of_position(mouse_position_end)
 		# TODO turn this into Vector2I helper adding, cant be in class due to
 		# cycle restriction
 		var distance := Vector2I.new(end_cookie.x-start_cookie.x, 
 									end_cookie.y-start_cookie.y)
 		# move all cookies 
-		if move_y and distance.x != 0: 
-			cookie_matrix.rotate_matrix_column(start_cookie.y, -distance.x)
-		if move_x: 
-			cookie_matrix.rotate_matrix_row(start_cookie.x, -distance.y)
-		print("moving (",-distance.x,",",-distance.y, ") spots")	
+		if move_row and distance.x != 0: 
+			cookie_matrix.rotate_matrix_row(start_cookie.y, -distance.x)
+		if move_column and distance.y != 0:
+			cookie_matrix.rotate_matrix_column(start_cookie.x, -distance.y)
+		print("moving (",distance.x,",",distance.y, ") spots")	
 		# Do redundancy check on the whole grid matrix HERE
 		# mostly for the cookie grid var
 		cookie_matrix.update()
 		# Remove visual clones
-		cookie_listX.delete_clones()
-		cookie_listY.delete_clones()
+		chosen_row.delete_clones()
+		chosen_column.delete_clones()
 		# Reset certain vars
 		mouse_position_start = Vector2()
-		cookie_listX = CookieArray.new()
-		cookie_listY = CookieArray.new()
+		chosen_row = CookieArray.new()
+		chosen_column = CookieArray.new()
 		have_click = false
 		in_grace = true
 		current_state = States.SCORE_STATE
 		timer.start()
+
+
+func _score_to_click():
+	print("SCORE->CLICK")
+	current_state = States.CLICK_STATE
+	have_click = false
 
 
 ### OTHER/HELPER FUNCTIONS

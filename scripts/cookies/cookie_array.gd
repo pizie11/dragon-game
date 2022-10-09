@@ -49,7 +49,7 @@ func rotate(n: int) -> void:
 # row is the row all the cookies in this array should be set to when displayed
 func update_array(row: int, grid_height: int) -> void:
 	for n in range(grid_height):
-		internal[n].set_grid(row,n)
+		internal[n].set_grid(n,row)
 		internal[n].set_shift(Vector2(0,0))
 		internal[n].update_position()
 
